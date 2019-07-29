@@ -1,0 +1,39 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+  "parameters": {
+    "hostingPlan": {
+      "type": "object",
+      "defaultValue": {
+        "name": "myHostingPlan",
+        "sku": {
+          "name": "S1",
+          "capacity": 1
+        }
+      }
+    }
+
+  },
+    "variables": {
+    },
+  "resources": [
+    {
+      "apiVersion": "2015-08-01",
+      "name": "[parameters('hostingPlan').name]",
+      "type": "Microsoft.Web/serverfarms",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "displayName": "HostingPlan"
+      },
+      "sku": {
+        "name": "[parameters('hostingPlan').sku.name]",
+        "capacity": "[parameters('hostingPlan').sku.capacity]"
+      },
+      "properties": {
+        "name": "[parameters('hostingPlan').name]"
+      }
+    }
+  ],
+    "outputs": {
+    }
+}

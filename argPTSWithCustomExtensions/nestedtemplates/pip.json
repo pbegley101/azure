@@ -1,0 +1,69 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+  "parameters": {
+    "networkName": {
+      "type": "string",
+      "defaultValue": "myNewNetwork"
+    },
+    "vm": {
+      "type": "object",
+      "defaultValue": {        
+          "machine": 
+            [
+              {
+                "name": "vm001",
+                "pip": "vm001-pip"
+              }
+
+            ]
+                  
+      }
+
+    }
+  },
+  "variables": {
+    "vnetName": "[concat(parameters('networkName'), '-vnet')]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[variables('vnetName')]",
+      "apiVersion": "2015-06-15",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "publicIPAllocationMethod": "Dynamic"
+      },
+      "dependsOn": [
+      ]
+    },
+    {
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[parameters('vm').machine[0].pip]",
+      "apiVersion": "2015-06-15",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "publicIPAllocationMethod": "Dynamic"
+      },
+      "dependsOn": [
+      ]
+    },
+    {
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[parameters('vm').machine[1].pip]",
+      "apiVersion": "2015-06-15",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "publicIPAllocationMethod": "Dynamic"
+      },
+      "dependsOn": [
+      ]
+    }
+  ],
+  "outputs": {
+    "pipvnet": {
+      "type": "string",
+      "value": "[variables('vnetName')]"
+    }
+  }
+}

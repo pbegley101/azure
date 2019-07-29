@@ -1,0 +1,66 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+  "parameters": {
+    "network": {
+      "type": "object",
+      "defaultValue": {
+        "name": "vnet",
+        "addressSpace": "10.10.0.0/25",
+        "subnet": [
+          {
+            "name": "default",
+            "addressSpace": "10.10.0.0/26"
+
+          },
+          {
+            "name": "gatewaySubnet",
+            "addressSpace": "10.10.0.96/27"
+          }
+        ]
+      }
+    },
+    "nsg": {
+      "type": "object",
+      "defaultValue": { "name": "nsg1" }
+    }
+  },
+    "variables": {
+    },
+  "resources": [
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[parameters('network').name]",
+      "apiVersion": "2015-06-15",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[parameters('network').addressSpace]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[parameters('network').subnet[0].name]",
+            "properties": {
+              "addressPrefix": "[parameters('network').subnet[0].addressSpace]",
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('nsg').name)]"
+              },
+              "ipConfigurations": []
+            }
+          },
+          {
+            "name": "[parameters('network').subnet[1].name]",
+            "properties": {
+              "addressPrefix": "[parameters('network').subnet[1].addressSpace]",
+              "ipConfigurations": []
+            }
+          }
+        ]
+      }
+    }
+  ],
+    "outputs": {
+    }
+}

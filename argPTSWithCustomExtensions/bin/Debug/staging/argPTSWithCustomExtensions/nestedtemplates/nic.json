@@ -1,0 +1,102 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+  "parameters": {
+    "nic": {
+      "type": "object",
+      "defaultValue": {
+        "instance": [
+          {
+            "name": "nic001"
+          },
+          {
+            "name": "nic002"
+          }
+        ]
+      }
+    },
+    "network": {
+      "type": "object",
+      "defaultValue": {
+        "name": "vnet",
+        "addressSpace": "10.10.0.0/25",
+        "subnet": [
+          {
+            "name": "default",
+            "addressSpace": "10.10.0.0/26"
+
+          },
+          {
+            "name": "gatewaySubnet",
+            "addressSpace": "10.10.0.96/27"
+          }
+        ]
+      }
+    },
+    "vm": {
+      "type": "object",
+      "defaultValue": {
+        "machine": [
+          {
+            "name": "vm001",
+            "pip": "vm001-pip"
+          },
+          {
+            "name": "vm002",
+            "pip": "vm002-pip"
+          }
+
+        ]
+
+      }
+    },
+    "nsg": {
+      "type": "object",
+      "defaultValue": { "name": "nsg1" }
+    }
+  },
+    "variables": {
+    },
+  "resources": [
+    {
+      "type": "Microsoft.Network/networkInterfaces",
+      "copy": {
+        "name": "niccount",
+        "count": "[length(parameters('nic').instance)]"
+      },
+      "name": "[parameters('nic').instance[copyIndex()].name]",
+      "apiVersion": "2016-03-30",
+      "location": "westeurope",
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "ipconfig1",
+            "properties": {
+              "privateIPAddress": "10.1.0.5",
+              "privateIPAllocationMethod": "Dynamic",
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('vm').machine[copyIndex()].pip)]"
+              },
+              "subnet": {
+                "id": "[concat(resourceId('Microsoft.Network/virtualNetworks', parameters('network').name), '/subnets/', parameters('network').subnet[0].name)]"
+              }
+            }
+          }
+        ],
+        "dnsSettings": {
+          "dnsServers": []
+        },
+        "enableIPForwarding": false,
+        "networkSecurityGroup": {
+          "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('nsg').name)]"
+        }
+      },
+      "resources": [],
+      "dependsOn": [
+
+      ]
+    }
+  ],
+    "outputs": {
+    }
+}

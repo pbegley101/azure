@@ -1,0 +1,140 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+  "parameters": {
+    "vm": {
+      "type": "object",
+      "defaultValue": {
+        "machine": [
+          {
+            "name": "vm001",
+            "pip": "vm001-pip",
+            "vault": {
+              "name": "vmsecrets",
+              "resourceGroup": "this-rg-demo"
+            }
+          }
+
+        ]
+
+      }
+    },
+    "sa": {
+      "type": "object",
+      "defaultValue": {
+        "instance": [
+          { "name": "saaaaaaaaa0001" }
+        ]
+      }
+    },
+    "nic": {
+      "type": "object",
+      "defaultValue": {
+        "instance": [
+          {
+            "name": "nic001"
+          }
+        ]
+      }
+    },
+    "adminPassword": { "type": "securestring" },
+
+      "artifactsLocation": {
+          "type": "string",
+          "metadata": {
+              "description": "Auto-generated container in staging storage account to receive post-build staging folder upload"
+          }
+      },
+      "artifactsLocationSasToken": {
+          "type": "securestring",
+          "metadata": {
+              "description": "Auto-generated token to access _artifactsLocation"
+          }
+      }
+  },
+    "variables": {
+        "installLampLinuxScriptFolder": "CustomScripts",
+        "installLampLinuxScriptFileName": "installLampLinux.sh"
+    },
+  "resources": [
+    {
+      "type": "Microsoft.Compute/virtualMachines",
+      "copy": {
+        "name": "vmcount",
+        "count": "[length(parameters('vm').machine)]"
+      },
+      "name": "[parameters('vm').machine[copyIndex()].name]",
+      "apiVersion": "2015-06-15",
+      "location": "westeurope",
+      "properties": {
+        "hardwareProfile": {
+          "vmSize": "Standard_DS1_v2"
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "Canonical",
+            "offer": "UbuntuServer",
+            "sku": "12.04.5-LTS",
+            "version": "latest"
+          },
+          "osDisk": {
+            "name": "[parameters('vm').machine[copyIndex()].name]",
+            "createOption": "FromImage",
+            "vhd": {
+              "uri": "[concat('https', '://', parameters('sa').instance[copyIndex()].name, '.blob.core.windows.net', concat('/vhds/', parameters('vm').machine[copyIndex()].name,'20161223102816.vhd'))]"
+            },
+            "caching": "ReadWrite"
+          },
+          "dataDisks": []
+        },
+        "osProfile": {
+          "computerName": "[parameters('vm').machine[copyIndex()].name]",
+          "adminUsername": "azureuser",
+          "linuxConfiguration": {
+            "disablePasswordAuthentication": false
+          },
+          "secrets": [],
+          "adminPassword": "[parameters('adminPassword')]"
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('nic').instance[copyIndex()].name)]"
+            }
+          ]
+        }
+      },
+      "resources": [
+        {
+          "name": "installLampLinux",
+          "type": "extensions",
+          "location": "westeurope",
+          "apiVersion": "2015-06-15",
+          "dependsOn": [
+            "[resourceId('Microsoft.Compute/virtualMachines', parameters('vm').machine[copyIndex()].name)]"
+          ],
+          "tags": {
+            "displayName": "installLampLinux"
+          },
+          "properties": {
+            "publisher": "Microsoft.OSTCExtensions",
+            "type": "CustomScriptForLinux",
+            "typeHandlerVersion": "1.4",
+            "autoUpgradeMinorVersion": true,
+            "settings": {
+              "fileUris": [
+                "[concat(parameters('artifactsLocation'), '/', variables('installLampLinuxScriptFolder'), '/', variables('installLampLinuxScriptFileName'), parameters('artifactsLocationSasToken'))]"
+              ],
+              "commandToExecute": "[concat('sh ', variables('installLampLinuxScriptFileName'), ' ', parameters('adminPassword'))]"
+            }
+          }
+        }
+      ],
+      "dependsOn": [
+
+      ]
+    }
+  ],
+    "outputs": {
+    }
+}

@@ -1,0 +1,97 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+  "parameters": {
+    "gateway": {
+      "type": "object",
+      "defaultValue": {
+        "name": "myGatewayName"
+      }
+    },
+    "network": {
+      "type": "object",
+      "defaultValue": {
+        "name": "vnet",
+        "addressSpace": "10.10.0.0/25",
+        "subnet": [
+          {
+            "name": "default",
+            "addressSpace": "10.10.0.0/26"
+
+          },
+          {
+            "name": "gatewaySubnet",
+            "addressSpace": "10.10.0.96/27"
+          }
+        ]
+      }
+    },
+    "pipvnet": {
+      "type": "string",
+      "defaultValue": "myNewNetwork-vnet"
+    },
+    "pointToSiteAddressSpace": {
+      "type": "string",
+      "defaultValue": "10.10.0.128/26"
+    },
+    "publicCert": {"type": "string"}
+  },
+  "variables": {
+    
+    "virtualNetworkGatewayName": "[concat(parameters('network').name, '-gateway')]",
+    
+    "gatewayIpConfigName": "[concat(parameters('network').name, '-gatewayvnetconfig')]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/virtualNetworkGateways",
+      "name": "[variables('virtualNetworkGatewayName')]",
+      "apiVersion": "2015-06-15",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "[variables('gatewayIpConfigName')]",
+            "id": "[resourceId('Microsoft.Network/virtualNetworkGateways/virtualNetworkGatewayIpConfigurations', variables('virtualNetworkGatewayName'), variables('gatewayIpConfigName'))]",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('network').name, parameters('network').subnet[1].name)]"
+              },
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('pipvnet'))]"
+              }
+            }
+          }
+        ],
+        "gatewayType": "Vpn",
+        "vpnType": "RouteBased",
+        "enableBgp": false,
+        "sku": {
+          "name": "Basic",
+          "tier": "Basic",
+          "capacity": 0
+        },
+        "vpnClientConfiguration": {
+          "vpnClientAddressPool": {
+            "addressPrefixes": [
+              "[parameters('pointToSiteAddressSpace')]"
+            ]
+          },
+          "vpnClientRootCertificates": [
+            {
+              "name": "AppServiceCertificate.cer",
+              "properties": {
+                "PublicCertData": "[parameters('publicCert')]"
+              }
+            }
+          ]
+        }
+      },
+      "dependsOn": [        
+      ]
+    }
+  ],
+    "outputs": {
+    }
+}

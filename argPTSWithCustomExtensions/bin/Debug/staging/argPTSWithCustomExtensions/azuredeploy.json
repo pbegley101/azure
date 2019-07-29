@@ -1,0 +1,349 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "_artifactsLocation": {
+      "type": "string"
+    },
+    "_artifactsLocationSasToken": {
+      "type": "securestring"
+    },
+    "hostingPlan": {
+      "type": "object",
+      "defaultValue": {
+        "name": "myHostingPlan",
+        "sku": {
+          "name": "S1",
+          "capacity": 1
+        }
+      }
+    },
+    "websiteName": {
+      "type": "string",
+      "defaultValue": "myNewWebsite0000001"
+    },
+    "network": {
+      "type": "object",
+      "defaultValue": {
+        "name": "vnet",
+        "addressSpace": "10.10.0.0/25",
+        "subnet": [
+          {
+            "name": "default",
+            "addressSpace": "10.10.0.0/26"
+
+          },
+          {
+            "name": "gatewaySubnet",
+            "addressSpace": "10.10.0.96/27"
+          }
+        ]
+      }
+    },
+    "nic": {
+      "type": "object",
+      "defaultValue": {
+        "instance": [
+          {
+            "name": "nic001"
+          },
+          {
+            "name": "nic002"
+          }
+        ]
+      }
+    },
+    "vm": {
+      "type": "object",
+      "defaultValue": {
+        "machine": [
+          {
+            "name": "vm001",
+            "pip": "vm001-pip",
+            "vault": {
+              "name": "vmsecrets",
+              "resourceGroup": "this-rg-demo"
+            }
+          },
+          {
+            "name": "vm002",
+            "pip": "vm002-pip",
+            "vault": {
+              "name": "vmsecrets",
+              "resourceGroup": "this-rg-demo"
+            }
+          }
+
+        ]
+
+      }
+    },
+    "sa": {
+      "type": "object",
+      "defaultValue": {
+        "instance": [
+          { "name": "saaaaaaaaa0001" },
+          { "name": "saaaaaaaaa0002" }
+        ]
+      }
+    },
+    "gateway": {
+      "type": "object",
+      "defaultValue": {
+        "name": "myGatewayName",
+        "vault": {
+          "name": "gatesecrets",
+          "resourceGroup": "this-rg-demo"
+        }
+      }
+    },
+    "nsg": {
+      "type": "object",
+      "defaultValue": { "name": "nsg1" }
+    }
+  }, "variables": {
+  "hostingPlanTemplateFolder": "nestedtemplates",
+  "hostingPlanTemplateFileName": "hostingPlan.json",
+  "hostingPlanTemplateParametersFileName": "hostingPlan.parameters.json",
+  "websiteTemplateFolder": "nestedtemplates",
+  "websiteTemplateFileName": "website.json",
+  "websiteTemplateParametersFileName": "website.parameters.json",
+  "networkTemplateFolder": "nestedtemplates",
+  "networkTemplateFileName": "network.json",
+  "networkTemplateParametersFileName": "network.parameters.json",
+  "pipTemplateFolder": "nestedtemplates",
+  "pipTemplateFileName": "pip.json",
+  "pipTemplateParametersFileName": "pip.parameters.json",
+  "gatewayTemplateFolder": "nestedtemplates",
+  "gatewayTemplateFileName": "gateway.json",
+  "gatewayTemplateParametersFileName": "gateway.parameters.json",
+  "nicTemplateFolder": "nestedtemplates",
+  "nicTemplateFileName": "nic.json",
+  "nicTemplateParametersFileName": "nic.parameters.json",
+  "saTemplateFolder": "nestedtemplates",
+  "saTemplateFileName": "sa.json",
+  "saTemplateParametersFileName": "sa.parameters.json",
+  "vmTemplateFolder": "nestedtemplates",
+  "vmTemplateFileName": "vm.json",
+  "vmTemplateParametersFileName": "vm.parameters.json",
+  "vnConnTemplateFolder": "nestedtemplates",
+  "vnConnTemplateFileName": "vnConn.json",
+  "vnConnTemplateParametersFileName": "vnConn.parameters.json",
+       "nsgTemplateFolder": "nestedtemplates",
+       "nsgTemplateFileName": "nsg.json",
+       "nsgTemplateParametersFileName": "nsg.parameters.json"
+}, "resources": [
+  {
+    "name": "hostingPlan",
+    "type": "Microsoft.Resources/deployments",
+    "apiVersion": "2015-01-01",
+    "dependsOn": [],
+    "properties": {
+      "mode": "Incremental",
+      "templateLink": {
+        "uri": "[concat(parameters('_artifactsLocation'), '/', variables('hostingPlanTemplateFolder'), '/', variables('hostingPlanTemplateFileName'), parameters('_artifactsLocationSasToken'))]",
+        "contentVersion": "1.0.0.0"
+      },
+      "parameters": {
+        "hostingPlan": {
+          "value": "[parameters('hostingPlan')]"
+        }
+      }
+    }
+  },
+
+  {
+    "name": "website",
+    "type": "Microsoft.Resources/deployments",
+    "apiVersion": "2015-01-01",
+    "dependsOn": [ "Microsoft.Resources/deployments/hostingPlan" ],
+    "properties": {
+      "mode": "Incremental",
+      "templateLink": {
+        "uri": "[concat(parameters('_artifactsLocation'), '/', variables('websiteTemplateFolder'), '/', variables('websiteTemplateFileName'), parameters('_artifactsLocationSasToken'))]",
+        "contentVersion": "1.0.0.0"
+      },
+      "parameters": {
+        "hostingPlan": {
+          "value": "[parameters('hostingPlan')]"
+        },
+        "websiteName": { "value": "[parameters('websiteName')]" }
+      }
+    }
+  },
+  {
+    "name": "network",
+    "type": "Microsoft.Resources/deployments",
+    "apiVersion": "2015-01-01",
+    "dependsOn": [ "Microsoft.Resources/deployments/nsg" ],
+    "properties": {
+      "mode": "Incremental",
+      "templateLink": {
+        "uri": "[concat(parameters('_artifactsLocation'), '/', variables('networkTemplateFolder'), '/', variables('networkTemplateFileName'), parameters('_artifactsLocationSasToken'))]",
+        "contentVersion": "1.0.0.0"
+      },
+      "parameters": {
+        "network": { "value": "[parameters('network')]" },
+        "nsg": { "value": "[parameters('nsg')]" }
+
+      }
+    }
+  },
+  {
+    "name": "pip",
+    "type": "Microsoft.Resources/deployments",
+    "apiVersion": "2015-01-01",
+    "dependsOn": [ "Microsoft.Resources/deployments/network" ],
+    "properties": {
+      "mode": "Incremental",
+      "templateLink": {
+        "uri": "[concat(parameters('_artifactsLocation'), '/', variables('pipTemplateFolder'), '/', variables('pipTemplateFileName'), parameters('_artifactsLocationSasToken'))]",
+        "contentVersion": "1.0.0.0"
+      },
+      "parameters": {
+        "networkName": { "value": "[parameters('network').name]" },
+        "vm": { "value": "[parameters('vm')]" }
+      }
+    }
+  },
+  {
+    "name": "gateway",
+    "type": "Microsoft.Resources/deployments",
+    "apiVersion": "2015-01-01",
+    "dependsOn": [
+      "Microsoft.Resources/deployments/pip",
+      "Microsoft.Resources/deployments/network"
+    ],
+    "properties": {
+      "mode": "Incremental",
+      "templateLink": {
+        "uri": "[concat(parameters('_artifactsLocation'), '/', variables('gatewayTemplateFolder'), '/', variables('gatewayTemplateFileName'), parameters('_artifactsLocationSasToken'))]",
+        "contentVersion": "1.0.0.0"
+      },
+      "parameters": {
+        "gateway": { "value": "[parameters('gateway')]" },
+        "network": { "value": "[parameters('network')]" },
+        "pipvnet": { "value": "[reference('pip').outputs.pipvnet.value]" },
+        "pointToSiteAddressSpace": { "value": "10.10.0.128/26" },
+        "publicCert": {
+          "reference": {
+            "keyVault": { "id": "[resourceId(parameters('gateway').vault.resourceGroup,'Microsoft.KeyVault/vaults',parameters('gateway').vault.name)]" },
+            "secretName": "publicCert"
+          }
+        }
+      }
+    }
+  },
+  {
+    "name": "nic",
+    "type": "Microsoft.Resources/deployments",
+    "apiVersion": "2015-01-01",
+    "dependsOn": [
+      "Microsoft.Resources/deployments/pip",
+      "Microsoft.Resources/deployments/network",
+      "Microsoft.Resources/deployments/nsg"
+    ],
+    "properties": {
+      "mode": "Incremental",
+      "templateLink": {
+        "uri": "[concat(parameters('_artifactsLocation'), '/', variables('nicTemplateFolder'), '/', variables('nicTemplateFileName'), parameters('_artifactsLocationSasToken'))]",
+        "contentVersion": "1.0.0.0"
+      },
+      "parameters": {
+        "nic": { "value": "[parameters('nic')]" },
+        "network": { "value": "[parameters('network')]" },
+        "vm": { "value": "[parameters('vm')]" },
+        "nsg": { "value": "[parameters('nsg')]" }
+      }
+    }
+  },
+  {
+    "name": "sa",
+    "type": "Microsoft.Resources/deployments",
+    "apiVersion": "2015-01-01",
+    "dependsOn": [],
+    "properties": {
+      "mode": "Incremental",
+      "templateLink": {
+        "uri": "[concat(parameters('_artifactsLocation'), '/', variables('saTemplateFolder'), '/', variables('saTemplateFileName'), parameters('_artifactsLocationSasToken'))]",
+        "contentVersion": "1.0.0.0"
+      },
+      "parameters": {
+        "sa": { "value": "[parameters('sa')]" }
+      }
+    }
+  },
+  {
+    "name": "vm",
+    "type": "Microsoft.Resources/deployments",
+    "apiVersion": "2015-01-01",
+    "dependsOn": [
+      "Microsoft.Resources/deployments/sa",
+      "Microsoft.Resources/deployments/nic",
+      "Microsoft.Resources/deployments/gateway",
+      "Microsoft.Resources/deployments/vnConn"
+
+    ],
+    "properties": {
+      "mode": "Incremental",
+      "templateLink": {
+        "uri": "[concat(parameters('_artifactsLocation'), '/', variables('vmTemplateFolder'), '/', variables('vmTemplateFileName'), parameters('_artifactsLocationSasToken'))]",
+        "contentVersion": "1.0.0.0"
+      },
+      "parameters": {
+        "vm": { "value": "[parameters('vm')]" },
+        "nic": { "value": "[parameters('nic')]" },
+        "sa": { "value": "[parameters('sa')]" },
+        "adminPassword": {
+          "reference": {
+            "keyVault": { "id": "[resourceId(parameters('vm').machine[0].vault.resourceGroup,'Microsoft.KeyVault/vaults',parameters('vm').machine[0].vault.name)]" },
+            "secretName": "adminPassword"
+          }
+        },
+        "artifactsLocation": { "value": "[parameters('_artifactsLocation')]" },
+        "artifactsLocationSasToken": { "value": "[parameters('_artifactsLocationSasToken')]" }
+
+      }
+    }
+  },
+  {
+    "name": "vnConn",
+    "type": "Microsoft.Resources/deployments",
+    "apiVersion": "2015-01-01",
+    "dependsOn": [
+      "Microsoft.Resources/deployments/network",
+      "Microsoft.Resources/deployments/website",
+      "Microsoft.Resources/deployments/gateway"
+    ],
+    "properties": {
+      "mode": "Incremental",
+      "templateLink": {
+        "uri": "[concat(parameters('_artifactsLocation'), '/', variables('vnConnTemplateFolder'), '/', variables('vnConnTemplateFileName'), parameters('_artifactsLocationSasToken'))]",
+        "contentVersion": "1.0.0.0"
+      },
+      "parameters": {
+        "websiteName": { "value": "[parameters('websiteName')]" },
+        "gateway": { "value": "[parameters('gateway')]" },
+        "network": { "value": "[parameters('network')]" }
+      }
+    }
+  },
+       {
+           "name": "nsg",
+           "type": "Microsoft.Resources/deployments",
+           "apiVersion": "2015-01-01",
+           "dependsOn": [ ],
+           "properties": {
+               "mode": "Incremental",
+               "templateLink": {
+                   "uri": "[concat(parameters('_artifactsLocation'), '/', variables('nsgTemplateFolder'), '/', variables('nsgTemplateFileName'), parameters('_artifactsLocationSasToken'))]",
+                   "contentVersion": "1.0.0.0"
+               },
+            "parameters": {
+              "nsg": { "value": "[parameters('nsg')]" }
+              
+            }
+           }
+       }
+], "outputs": {
+} }

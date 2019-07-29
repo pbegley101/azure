@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|AnyCPU">
+      <Configuration>Debug</Configuration>
+      <Platform>AnyCPU</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|AnyCPU">
+      <Configuration>Release</Configuration>
+      <Platform>AnyCPU</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>5540a389-088c-4649-af72-b3175c05d6e9</ProjectGuid>
+  </PropertyGroup>
+  <PropertyGroup>
+    <TargetFrameworkIdentifier>Deployment</TargetFrameworkIdentifier>
+    <TargetFrameworkVersion>1.0</TargetFrameworkVersion>
+    <PrepareForBuildDependsOn>
+    </PrepareForBuildDependsOn>
+  </PropertyGroup>
+  <Import Condition=" Exists('Deployment.targets') " Project="Deployment.targets" />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
+  <!-- vertag<:>start tokens<:>maj.min -->
+  <Import Condition=" Exists('$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Deployment\1.1\DeploymentProject.targets') " Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Deployment\1.1\DeploymentProject.targets" />
+  <!-- vertag<:>end -->
+  <ItemGroup>
+    <Content Include="azuredeploy.json" />
+    <Content Include="azuredeploy.parameters.json" />
+    <Content Include="CustomScripts\installLampLinux.sh" />
+    <None Include="Deployment.targets">
+      <Visible>False</Visible>
+    </None>
+    <Content Include="Deploy-AzureResourceGroup.ps1" />
+    <Content Include="nestedtemplates\hostingPlan.json" />
+    <Content Include="nestedtemplates\hostingPlan.parameters.json" />
+    <Content Include="nestedtemplates\website.json" />
+    <Content Include="nestedtemplates\website.parameters.json" />
+    <Content Include="nestedtemplates\network.json" />
+    <Content Include="nestedtemplates\network.parameters.json" />
+    <Content Include="nestedtemplates\pip.json" />
+    <Content Include="nestedtemplates\pip.parameters.json" />
+    <Content Include="nestedtemplates\gateway.json" />
+    <Content Include="nestedtemplates\gateway.parameters.json" />
+    <Content Include="nestedtemplates\nic.json" />
+    <Content Include="nestedtemplates\nic.parameters.json" />
+    <Content Include="nestedtemplates\sa.json" />
+    <Content Include="nestedtemplates\sa.parameters.json" />
+    <Content Include="nestedtemplates\vm.json" />
+    <Content Include="nestedtemplates\vm.parameters.json" />
+    <Content Include="nestedtemplates\vnConn.json" />
+    <Content Include="nestedtemplates\vnConn.parameters.json" />
+    <Content Include="nestedtemplates\nsg.json" />
+    <Content Include="nestedtemplates\nsg.parameters.json" />
+  </ItemGroup>
+  <Target Name="GetReferenceAssemblyPaths" />
+</Project>
